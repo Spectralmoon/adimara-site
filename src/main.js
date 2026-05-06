@@ -45,6 +45,28 @@ document.querySelectorAll('.panel-cloud-sky').forEach((v) => {
   v.playbackRate = 0.3;
 });
 
+/* Panel 3 — sync the cloud-sky overlay's fade-in with the video midpoint
+   ("when the camera passes the palm trees"). Without this, clouds are
+   visible from the start and break the moment of revelation. */
+const p3Panel = document.querySelector('.panel.p3');
+if (p3Panel) {
+  const p3Video = p3Panel.querySelector('.panel-bg-video');
+  const p3Cloud = p3Panel.querySelector('.panel-cloud-sky');
+  if (p3Video && p3Cloud) {
+    /* Show clouds from t=2.4s onward (raw video time — at 0.75x playback this
+       is the visible midpoint where the camera is past the palm trees).
+       Hide briefly at the loop wrap so the fade-in re-fires next cycle. */
+    p3Video.addEventListener('timeupdate', () => {
+      const t = p3Video.currentTime;
+      if (t >= 2.4 && t < 5.0) {
+        p3Cloud.classList.add('visible');
+      } else if (t < 0.4) {
+        p3Cloud.classList.remove('visible');
+      }
+    });
+  }
+}
+
 function go(targetIndex) {
   if (isAnimating) return;
   if (targetIndex === current) return;

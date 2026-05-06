@@ -104,10 +104,121 @@ html, body {
   filter: contrast(1.12) saturate(1.18) brightness(1.03);
 }
 
-/* Panel 3 — Recognition — real cloud + 3 moons cosmic image */
-.panel.p3 .panel-bg {
-  background-image: url('/images/panel-3-bg.png');
-  background-color: var(--color-amber-gold); /* fallback if image missing */
+/* Panel 3 — Recognition — typography polish matching Panels 1 + 2:
+   smaller italic Fraunces 700 headline + uppercase tracked Inter Tight tagline
+   + dual text-shadow (dark grounding + warm radiance) + soft radial vignette.
+   Stacked together in lower-left dark zone (the hilltop grass area). */
+.panel.p3 .panel-inner {
+  display: block;
+  padding: 0;
+}
+.panel.p3 .panel-inner::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 60%;
+  height: 40%;
+  background: radial-gradient(
+    ellipse at 25% 70%,
+    rgba(20, 10, 30, 0.55) 0%,
+    rgba(20, 10, 30, 0.32) 35%,
+    rgba(20, 10, 30, 0.12) 60%,
+    transparent 85%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+.panel.p3 .headline {
+  position: absolute;
+  left: 6vw;
+  bottom: 14vh;
+  font-size: clamp(28px, 3.6vw, 64px);
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--color-bone-white);
+  opacity: 0.92;
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.55),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 0 28px rgba(255, 215, 180, 0.45),
+    0 0 8px rgba(255, 220, 200, 0.35);
+  text-align: left;
+  grid-column: unset; grid-row: unset; justify-self: unset;
+  margin: 0;
+}
+.panel.p3 .tagline {
+  position: absolute;
+  left: 6vw;
+  bottom: 8vh;
+  text-align: left;
+  max-width: 420px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-style: normal;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  font-size: clamp(11px, 0.85vw, 13px);
+  color: var(--color-bone-white);
+  opacity: 0.95;
+  text-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.6),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(255, 215, 180, 0.4);
+  grid-column: unset; grid-row: unset; justify-self: unset;
+  margin: 0;
+}
+
+/* Panel 3 — Recognition — bg is the panel-3-bg-city.mp4 video (wide Adimara
+   city loop). Static panel-3-bg.png is the video poster fallback. The
+   :has(.panel-bg-video) rule earlier suppresses panel-bg div for this panel. */
+
+/* Panel 3 — Recognition foreground (Lyran couple) REMOVED from HTML.
+   The wide city camera-glide IS the experience. CSS rules kept here
+   commented in case we re-introduce the couple later in a different way. */
+/*
+.panel.p3 .panel-fg {
+  mix-blend-mode: multiply;
+  width: auto; height: 75vh;
+  inset: auto; bottom: -5vh; right: 8vw;
+  object-fit: contain; object-position: right bottom;
+  mask-image: linear-gradient(to right, transparent 0%, black 25%);
+}
+*/
+
+/* Panel 3 — cloud-sky layer in upper-right corner only (matching Panel 2's
+   polygon for visual continuity), with a JS-triggered fade-in synced to the
+   video's midpoint (~2.6s when the camera passes the palm trees).
+   Initial opacity 0 — the JS adds .visible class at the right moment. */
+.panel.p3 .panel-cloud-sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  /* Same polygon as Panel 2 — upper-right wedge ~30% of frame.
+     stdDeviation 8 = even softer feather than Panel 2 for blur-blend look. */
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'><filter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'><feGaussianBlur stdDeviation='8'/></filter><polygon points='100,0 100,62 93,57 87,60 80,48 75,52 68,40 63,43 56,32 50,35 47,20 44,22 42,0' fill='white' filter='url(%23b)'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'><filter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'><feGaussianBlur stdDeviation='8'/></filter><polygon points='100,0 100,62 93,57 87,60 80,48 75,52 68,40 63,43 56,32 50,35 47,20 44,22 42,0' fill='white' filter='url(%23b)'/></svg>");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  /* Warm filter to match the city's rose-amber palette */
+  filter: hue-rotate(-15deg) saturate(1.1) brightness(1.05);
+  /* Screen blend so bright cloud highlights add to the city sky */
+  mix-blend-mode: screen;
+  /* Initially hidden — JS toggles .visible at video midpoint */
+  opacity: 0;
+  transition: opacity 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.panel.p3 .panel-cloud-sky.visible {
+  opacity: 0.72;
 }
 
 /* Foreground image (Lyra cutout) */
