@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Adimara — Where the Stars Remember</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter+Tight:wght@300..700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  :root {
+    /* Adimara palette (LOCKED) */
+    --sand-cream: #f5ecdc;
+    --honey: #d9b67a;
+    --amber-gold: #c89248;
+    --brass: #9b6b3d;
+    --twilight-rose: #e6a89a;
+    --dusty-violet: #b6a6c4;
+    --dust-gold: #f0d7a0;
+    --espresso: #2a201a;
+    --cochineal: #a8302c;
+    --bone-white: #fbf8f1;
+    --sage-tint: #a8a98c;
+
+    --duration: 0.75s;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; width: 100%; overflow: hidden; background: var(--espresso); color: var(--bone-white); font-family: 'Inter Tight', sans-serif; }
+
+  /* Snap container */
+  #snap-container { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+  /* Each hero panel */
+  .panel {
+    position: absolute; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    will-change: transform, opacity;
+  }
+
+  /* Gradient placeholders per panel — Adimara palette zones */
+  .panel.p1 { background: linear-gradient(160deg, var(--sand-cream) 0%, var(--honey) 50%, var(--sage-tint) 100%); }
+  .panel.p2 { background: linear-gradient(180deg, var(--bone-white) 0%, var(--twilight-rose) 50%, var(--cochineal) 100%); }
+  .panel.p3 { background: linear-gradient(160deg, var(--dust-gold) 0%, var(--amber-gold) 50%, var(--brass) 100%); }
+
+  /* Inner content layer */
+  .panel-inner {
+    position: relative; z-index: 2;
+    text-align: center; padding: 0 8vw;
+    color: var(--espresso);
+    max-width: 1100px;
+  }
+
+  .headline {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 800;
+    font-size: clamp(64px, 12vw, 200px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+    text-transform: lowercase;
+    will-change: transform, opacity;
+  }
+  .tagline {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(18px, 1.8vw, 26px);
+    line-height: 1.5;
+    max-width: 640px;
+    margin: 0 auto;
+    opacity: 0.85;
+    will-change: transform, opacity;
+  }
+
+  /* Top nav */
+  .top-nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 10;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 28px 48px;
+    color: var(--bone-white);
+    mix-blend-mode: difference;
+    pointer-events: auto;
+  }
+  .brand {
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 20px;
+    letter-spacing: 0.02em;
+  }
+  .top-nav-links { display: flex; gap: 32px; }
+  .top-nav-links a {
+    color: var(--bone-white);
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* Side scroll indicators */
+  .side-indicator {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    z-index: 9;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    mix-blend-mode: difference;
+    color: var(--bone-white);
+    opacity: 0.6;
+  }
+  .side-indicator.left { left: 28px; }
+  .side-indicator.right { right: 28px; }
+
+  /* Progress dots right edge */
+  .progress-dots {
+    position: fixed; right: 48px; top: 50%; transform: translateY(-50%);
+    z-index: 10;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    opacity: 0.25;
+    cursor: pointer;
+    transition: opacity 0.3s, transform 0.3s;
+    mix-blend-mode: difference;
+    background: var(--bone-white);
+  }
+  .dot.active { opacity: 1; transform: scale(1.3); }
+  .dot:hover { opacity: 0.7; }
+
+  /* Footer socials */
+  .footer {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 10;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 28px 48px;
+    color: var(--bone-white);
+    mix-blend-mode: difference;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .footer a {
+    color: var(--bone-white);
+    text-decoration: none;
+    margin-left: 24px;
+  }
+
+  /* Scroll cue */
+  .scroll-cue {
+    position: absolute; bottom: 96px; left: 50%; transform: translateX(-50%);
+    z-index: 5;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--espresso);
+    opacity: 0.5;
+    animation: bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translate(-50%, 0); }
+    50%      { transform: translate(-50%, 8px); }
+  }
+  .panel.p3 .scroll-cue { display: none; }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <div class="brand">Spectralmoon Studio</div>
+  <div class="top-nav-links">
+    <a href="#">Atlas</a>
+    <a href="#">Lyra</a>
+    <a href="#">About</a>
+  </div>
+</nav>
+
+<div class="side-indicator left">Adimara · 01—03</div>
+<div class="side-indicator right">Where the Stars Remember</div>
+
+<div id="snap-container">
+
+  <section class="panel p1" data-index="0">
+    <div class="panel-inner">
+      <h1 class="headline">home.</h1>
+      <p class="tagline">Every blade of grass, every stone — they had always known her.</p>
+    </div>
+    <div class="scroll-cue">Scroll</div>
+  </section>
+
+  <section class="panel p2" data-index="1">
+    <div class="panel-inner">
+      <h1 class="headline">stillness.</h1>
+      <p class="tagline">Under the tree, she finally heard herself.</p>
+    </div>
+    <div class="scroll-cue">Scroll</div>
+  </section>
+
+  <section class="panel p3" data-index="2">
+    <div class="panel-inner">
+      <h1 class="headline">recognition.</h1>
+      <p class="tagline">There was no moment of meeting. There was only remembering.</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="progress-dots">
+  <div class="dot active" data-index="0"></div>
+  <div class="dot" data-index="1"></div>
+  <div class="dot" data-index="2"></div>
+</div>
+
+<footer class="footer">
+  <span>Spectralmoon Studio · 2026</span>
+  <div>
+    <a href="https://instagram.com/spectralmoon.creates" target="_blank">@spectralmoon.creates</a>
+    <a href="mailto:hello@spectralmoonstudio.com">Contact</a>
+  </div>
+</footer>
+
+<script>
+  // Snap-scroll mechanics — GSAP-driven, NOT CSS scroll-snap-type.
+  // Tutorial spec (LOCKED — do not change):
+  //   DURATION: 0.75s, EASE: power2.out
+  //   Scroll DOWN: outgoing yPercent -30, scale 0.95, opacity 0.4 + incoming yPercent 100→0
+  //   Scroll UP:   reverse
+  //   Lock input during transition
+  //   Inputs: wheel, touch (50px swipe), arrow keys, Space, click on dots
+
+  const panels = gsap.utils.toArray('.panel');
+  const dots   = gsap.utils.toArray('.dot');
+  let current = 0;
+  let isAnimating = false;
+  const DURATION = 0.75;
+  const EASE = 'power2.out';
+
+  // Initial state — only first visible
+  gsap.set(panels, { yPercent: (i) => i === 0 ? 0 : 100 });
+
+  function go(targetIndex) {
+    if (isAnimating) return;
+    if (targetIndex === current) return;
+    if (targetIndex < 0 || targetIndex >= panels.length) return;
+
+    isAnimating = true;
+    const direction = targetIndex > current ? 1 : -1;
+    const outgoing = panels[current];
+    const incoming = panels[targetIndex];
+
+    gsap.set(incoming, { yPercent: direction === 1 ? 100 : -100, scale: 1, opacity: 1 });
+
+    const tl = gsap.timeline({
+      defaults: { duration: DURATION, ease: EASE },
+      onComplete: () => {
+        isAnimating = false;
+        current = targetIndex;
+      }
+    });
+
+    tl.to(outgoing, {
+      yPercent: direction === 1 ? -30 : 30,
+      scale: 0.95,
+      opacity: 0.4
+    }, 0);
+
+    tl.to(incoming, { yPercent: 0 }, 0);
+
+    dots.forEach((d, i) => d.classList.toggle('active', i === targetIndex));
+  }
+
+  // Wheel
+  let wheelLock = false;
+  window.addEventListener('wheel', (e) => {
+    if (wheelLock) return;
+    if (Math.abs(e.deltaY) < 5) return;
+    wheelLock = true;
+    setTimeout(() => { wheelLock = false; }, DURATION * 1000 + 100);
+    if (e.deltaY > 0) go(current + 1);
+    else go(current - 1);
+  }, { passive: true });
+
+  // Keyboard
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(current + 1); }
+    if (e.key === 'ArrowUp' || e.key === 'PageUp')                       { e.preventDefault(); go(current - 1); }
+  });
+
+  // Touch
+  let touchStartY = 0;
+  window.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchend',   (e) => {
+    const dy = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) < 50) return;
+    if (dy > 0) go(current + 1); else go(current - 1);
+  }, { passive: true });
+
+  // Click on dots
+  dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
+</script>
+
+</body>
+</html>

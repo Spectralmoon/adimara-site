@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Adimara — Where the Stars Remember. A Spectralmoon Studio piece." />
+  <title>Adimara — Where the Stars Remember</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter+Tight:wght@300..700&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+
+  <!-- Top nav: brand watermark + burger menu -->
+  <div class="top-nav">
+    <div class="brand">Spectralmoon Studio</div>
+    <button class="burger-menu" aria-label="Open menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <!-- Menu overlay (hidden by default, opens via burger click) -->
+  <div class="menu-overlay" id="menu-overlay" hidden>
+    <button class="menu-close" aria-label="Close menu">×</button>
+    <nav class="menu-nav">
+      <a href="#" data-go="0">home</a>
+      <a href="#" data-go="1">stillness</a>
+      <a href="#" data-go="2">recognition</a>
+    </nav>
+  </div>
+
+  <!-- Side indicator -->
+  <div class="side-indicator right">Adimara World</div>
+
+  <!-- Snap container -->
+  <div id="snap-container">
+
+    <!-- Panel 1 — Longing / Departure -->
+    <!-- Layered: bg (cloud-mountain video) + figure (Lyra transparent cutout) -->
+    <section class="panel p1" data-index="0" aria-label="Panel 1 — Home">
+      <video class="panel-bg-video" autoplay muted loop playsinline preload="auto" poster="/images/panel-1-bg.png">
+        <source src="/videos/panel-1-bg.mp4" type="video/mp4" />
+      </video>
+      <div class="panel-bg"></div>
+      <img class="panel-fg" src="/images/panel-1-fg.png?v=alpha5" alt="" onerror="this.style.display='none'" />
+      <div class="panel-inner">
+        <h1 class="headline">Belonging</h1>
+        <p class="tagline">Every blade of grass, every stone. They had always known her.</p>
+      </div>
+      <div class="scroll-cue">Scroll</div>
+    </section>
+
+    <!-- Panel 2 — Stillness -->
+    <!-- Layered (back→front in DOM order, all z-index 0 except fg at 1):
+         1. panel-bg-video — pyramid scene flipped (pyramid right, 3 moons, jungle)
+         2. panel-cloud-sky — clouds layer ON TOP of pyramid, clipped to upper-right
+            wedge (~45%) with jagged organic edge — replaces the sky+moons in that
+            region with drifting clouds. The pyramid still shows where clouds aren't.
+         3. panel-bg — suppressed
+         4. panel-tint — warm gradient unifying everything
+         5. panel-fg — Lyra cutout (left corner) -->
+    <section class="panel p2" data-index="1" aria-label="Panel 2 — Stillness">
+      <video class="panel-bg-video" autoplay muted loop playsinline preload="auto" poster="/images/panel-2-bg.png">
+        <source src="/videos/panel-2-bg-pyramid-flipped.mp4" type="video/mp4" />
+      </video>
+      <video class="panel-cloud-sky" autoplay muted loop playsinline preload="auto">
+        <source src="/videos/clouds-flipped.mp4" type="video/mp4" />
+      </video>
+      <div class="panel-bg"></div>
+      <div class="panel-tint"></div>
+      <img class="panel-fg" src="/images/panel-2-fg.png?v=alpha13" alt="" onerror="this.style.display='none'" />
+      <div class="panel-inner">
+        <h1 class="headline">Stillness</h1>
+        <p class="tagline">Where the moons rose, she heard herself.</p>
+      </div>
+      <div class="scroll-cue">Scroll</div>
+    </section>
+
+    <!-- Panel 3 — Recognition -->
+    <section class="panel p3" data-index="2" aria-label="Panel 3 — Recognition">
+      <video class="panel-bg-video" autoplay muted loop playsinline preload="auto" poster="/images/panel-3-bg.png">
+        <source src="/videos/panel-3-bg-v2.mp4" type="video/mp4" />
+      </video>
+      <div class="panel-bg"></div>
+      <img class="panel-fg" src="/images/panel-3-fg.png?v=alpha1" alt="" onerror="this.style.display='none'" />
+      <div class="panel-inner">
+        <h1 class="headline">Recognition</h1>
+        <p class="tagline">There was no moment of meeting. There was only remembering.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Progress dots -->
+  <div class="progress-dots">
+    <button class="dot active" data-index="0" aria-label="Go to panel 1"></button>
+    <button class="dot" data-index="1" aria-label="Go to panel 2"></button>
+    <button class="dot" data-index="2" aria-label="Go to panel 3"></button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span></span>
+    <div class="footer-links">
+      <a class="ig-link" href="https://instagram.com/spectralmoon.creates" target="_blank" rel="noopener" aria-label="Instagram — @spectralmoon.creates">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+        </svg>
+      </a>
+      <a href="mailto:hello@spectralmoonstudio.com">Contact</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

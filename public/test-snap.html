@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Adimara Snap Test — bypass Vite/HMR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300..900;1,300..900&family=Inter+Tight:wght@300..700&family=Bebas+Neue&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  /* ------------------------------------------------------------------
+     EXACT match of reference.html's panel CSS — no transform on .panel,
+     no overflow:hidden — GSAP fully owns panel positioning.
+     We add the .panel-bg-video / .panel-bg / .panel-fg layered children
+     here to verify whether the layered content is the issue.
+     ------------------------------------------------------------------ */
+  :root {
+    --sand-cream: #f5ecdc;
+    --honey: #d9b67a;
+    --amber-gold: #c89248;
+    --brass: #9b6b3d;
+    --twilight-rose: #e6a89a;
+    --espresso: #2a201a;
+    --bone-white: #fbf8f1;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%; width: 100%;
+    overflow: hidden;
+    background: var(--espresso);
+    color: var(--bone-white);
+    font-family: 'Inter Tight', sans-serif;
+  }
+
+  #snap-container { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+  .panel {
+    position: absolute; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    will-change: transform, opacity;
+    overflow: hidden;
+  }
+
+  .panel-bg-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
+  }
+  .panel-bg {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+  }
+  .panel-fg {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Panel 1 — cloud-mountain video bg + Lyra ascending fg */
+  .panel.p1 .panel-fg {
+    width: auto; height: 80vh;
+    bottom: -15vh; right: 0;
+    object-fit: contain;
+    object-position: right bottom;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 25%);
+    mask-image: linear-gradient(to right, transparent 0%, black 25%);
+  }
+
+  /* Panel 2 — Eden city bg + Lyra+sacred-tree fg */
+  .panel.p2 .panel-bg {
+    background-image: url('/images/panel-2-bg.png');
+    background-color: var(--twilight-rose);
+  }
+  .panel.p2 .panel-fg {
+    width: auto; height: 80vh;
+    bottom: 0; right: 0;
+    object-fit: contain;
+    object-position: right bottom;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 25%);
+    mask-image: linear-gradient(to right, transparent 0%, black 25%);
+  }
+
+  /* Panel 3 — cloud + 3 moons video bg + Lyran couple fg */
+  .panel.p3 .panel-fg {
+    width: auto; height: 80vh;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    object-fit: contain;
+    object-position: center bottom;
+  }
+
+  /* Inner content layer */
+  .panel-inner {
+    position: absolute; inset: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    grid-template-rows: 1fr auto;
+    align-items: end;
+    padding: 0 6vw 14vh;
+    pointer-events: none;
+  }
+  .headline {
+    grid-column: 1; grid-row: 2;
+    justify-self: start;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 800;
+    font-size: clamp(56px, 9vw, 160px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--bone-white);
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+    margin: 0;
+  }
+  .tagline {
+    grid-column: 2; grid-row: 2;
+    justify-self: end;
+    text-align: right;
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(16px, 1.4vw, 22px);
+    line-height: 1.4;
+    max-width: 320px;
+    opacity: 0.95;
+    color: var(--bone-white);
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+    margin: 0;
+  }
+
+  /* Progress dots */
+  .progress-dots {
+    position: fixed; right: 48px; top: 50%; transform: translateY(-50%);
+    z-index: 10;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--bone-white);
+    border: none;
+    opacity: 0.25;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .dot.active { opacity: 1; transform: scale(1.3); }
+
+  /* TEST badge so it's obvious you're on the test page */
+  .test-badge {
+    position: fixed; top: 28px; left: 28px;
+    z-index: 20;
+    background: rgba(168, 48, 44, 0.9);
+    color: var(--bone-white);
+    padding: 8px 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    border-radius: 4px;
+    pointer-events: none;
+  }
+
+  /* Debug HUD — shows current panel and last action */
+  .debug-hud {
+    position: fixed; bottom: 28px; left: 28px;
+    z-index: 20;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    padding: 10px 14px;
+    font-family: 'Inter Tight', monospace;
+    font-size: 12px;
+    border-radius: 4px;
+    line-height: 1.6;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="test-badge">TEST PAGE — pure reference.html mechanic + our images</div>
+
+<div class="debug-hud" id="hud">
+  current: 0 (Panel 1)<br>
+  last action: page load
+</div>
+
+<div id="snap-container">
+
+  <section class="panel p1" data-index="0">
+    <video class="panel-bg-video" autoplay muted loop playsinline preload="auto" poster="/images/panel-1-bg.png">
+      <source src="/videos/panel-1-bg.mp4" type="video/mp4" />
+    </video>
+    <img class="panel-fg" src="/images/panel-1-fg.png" alt="" onerror="this.style.display='none'" />
+    <div class="panel-inner">
+      <h1 class="headline">Belonging</h1>
+      <p class="tagline">Every blade of grass, every stone. They had always known her.</p>
+    </div>
+  </section>
+
+  <section class="panel p2" data-index="1">
+    <div class="panel-bg"></div>
+    <img class="panel-fg" src="/images/panel-2-fg.png" alt="" onerror="this.style.display='none'" />
+    <div class="panel-inner">
+      <h1 class="headline">Stillness</h1>
+      <p class="tagline">Under the tree, she finally heard herself.</p>
+    </div>
+  </section>
+
+  <section class="panel p3" data-index="2">
+    <video class="panel-bg-video" autoplay muted loop playsinline preload="auto" poster="/images/panel-3-bg.png">
+      <source src="/videos/panel-3-bg.mp4" type="video/mp4" />
+    </video>
+    <img class="panel-fg" src="/images/panel-3-fg.png" alt="" onerror="this.style.display='none'" />
+    <div class="panel-inner">
+      <h1 class="headline">Recognition</h1>
+      <p class="tagline">There was no moment of meeting. There was only remembering.</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="progress-dots">
+  <button class="dot active" data-index="0" aria-label="Go to panel 1"></button>
+  <button class="dot" data-index="1" aria-label="Go to panel 2"></button>
+  <button class="dot" data-index="2" aria-label="Go to panel 3"></button>
+</div>
+
+<script>
+  // EXACT port of reference.html's <script>, plus a debug HUD.
+  const panels = gsap.utils.toArray('.panel');
+  const dots   = gsap.utils.toArray('.dot');
+  const hud    = document.getElementById('hud');
+  let current = 0;
+  let isAnimating = false;
+  const DURATION = 0.75;
+  const EASE = 'power2.out';
+
+  function updateHud(action) {
+    const labels = ['Panel 1 (Belonging)', 'Panel 2 (Stillness)', 'Panel 3 (Recognition)'];
+    hud.innerHTML = `current: ${current} (${labels[current]})<br>last action: ${action}`;
+  }
+
+  // Slow background videos
+  document.querySelectorAll('.panel-bg-video').forEach((v) => { v.playbackRate = 0.5; });
+
+  // Initial state — only first visible
+  gsap.set(panels, { yPercent: (i) => i === 0 ? 0 : 100 });
+
+  function go(targetIndex) {
+    if (isAnimating) { updateHud(`go(${targetIndex}) blocked: animating`); return; }
+    if (targetIndex === current) { updateHud(`go(${targetIndex}) blocked: same panel`); return; }
+    if (targetIndex < 0 || targetIndex >= panels.length) { updateHud(`go(${targetIndex}) blocked: out of range`); return; }
+
+    isAnimating = true;
+    const direction = targetIndex > current ? 1 : -1;
+    const outgoing = panels[current];
+    const incoming = panels[targetIndex];
+
+    gsap.set(incoming, { yPercent: direction === 1 ? 100 : -100, scale: 1, opacity: 1 });
+
+    const tl = gsap.timeline({
+      defaults: { duration: DURATION, ease: EASE },
+      onComplete: () => {
+        isAnimating = false;
+        current = targetIndex;
+        updateHud(`landed on ${targetIndex}`);
+      }
+    });
+
+    tl.to(outgoing, { yPercent: direction === 1 ? -30 : 30, scale: 0.95, opacity: 0.4 }, 0);
+    tl.to(incoming, { yPercent: 0 }, 0);
+
+    dots.forEach((d, i) => d.classList.toggle('active', i === targetIndex));
+    updateHud(`go(${targetIndex}) firing — direction ${direction}`);
+  }
+
+  // Wheel
+  let wheelLock = false;
+  window.addEventListener('wheel', (e) => {
+    if (wheelLock) return;
+    if (Math.abs(e.deltaY) < 5) return;
+    wheelLock = true;
+    setTimeout(() => { wheelLock = false; }, DURATION * 1000 + 100);
+    if (e.deltaY > 0) go(current + 1);
+    else go(current - 1);
+  }, { passive: true });
+
+  // Keyboard
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(current + 1); }
+    if (e.key === 'ArrowUp' || e.key === 'PageUp')                       { e.preventDefault(); go(current - 1); }
+  });
+
+  // Touch
+  let touchStartY = 0;
+  window.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchend',   (e) => {
+    const dy = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) < 50) return;
+    if (dy > 0) go(current + 1); else go(current - 1);
+  }, { passive: true });
+
+  // Click on dots — log which dot was clicked
+  dots.forEach((d, i) => d.addEventListener('click', () => {
+    console.log(`Clicked dot index ${i} (data-index=${d.dataset.index})`);
+    go(i);
+  }));
+
+  updateHud('ready');
+</script>
+
+</body>
+</html>

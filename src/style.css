@@ -1,0 +1,609 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Adimara design tokens (LOCKED — warm-only palette)
+   ------------------------------------------------------------------ */
+@theme {
+  --color-sand-cream: #f5ecdc;
+  --color-honey: #d9b67a;
+  --color-amber-gold: #c89248;
+  --color-brass: #9b6b3d;
+  --color-twilight-rose: #e6a89a;
+  --color-dusty-violet: #b6a6c4;
+  --color-dust-gold: #f0d7a0;
+  --color-espresso: #2a201a;
+  --color-cochineal: #a8302c;
+  --color-bone-white: #fbf8f1;
+  --color-sage-tint: #a8a98c;
+
+  --font-display: 'Fraunces', serif;
+  --font-ui: 'Inter Tight', sans-serif;
+  --font-cond: 'Bebas Neue', 'Schabo', 'Inter Tight', sans-serif;
+}
+
+/* ------------------------------------------------------------------
+   Reset + base
+   ------------------------------------------------------------------ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  height: 100%; width: 100%;
+  overflow: hidden;
+  background: var(--color-espresso);
+  color: var(--color-bone-white);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ------------------------------------------------------------------
+   Snap container + panels
+   ------------------------------------------------------------------ */
+#snap-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.panel {
+  position: absolute; top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  will-change: transform, opacity;
+  overflow: hidden;
+  /* No CSS transform — GSAP handles ALL panel positioning via yPercent.
+     Removing this matches reference.html exactly. There may be a 1-frame
+     FOUC where all 3 panels stack at top:0 before main.js runs, but
+     gsap.set on line 1 of main.js fixes that immediately. */
+}
+
+/* Panel background layer (gradient fallback + image overlay) */
+.panel-bg {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+  /* No opacity:0 default — Panels 2/3 are hidden via translateY(100%) at the
+     panel level. JS still sets opacity:1 in applyLayerAnimations, but if for
+     any reason it doesn't fire, the bg stays visible instead of going dark. */
+}
+
+/* Panel background VIDEO layer — sits behind .panel-bg as the dynamic version */
+.panel-bg-video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* When video is present, suppress the static .panel-bg overlay */
+.panel:has(.panel-bg-video) .panel-bg {
+  background: transparent;
+}
+
+/* Panel 1 — Longing — VIDEO is the bg (.panel-bg div is transparent so video shows) */
+.panel.p1 .panel-bg {
+  background: transparent;
+}
+
+/* Panel 2 — Stillness — bg is the panel-2-bg.mp4 video.
+   The static panel-2-bg.png is set as the video's poster (loading fallback)
+   so we don't need a CSS background-image here. Removing this rule lets the
+   ".panel:has(.panel-bg-video) .panel-bg { background: transparent }" rule
+   win and the video shows through. */
+
+/* Panel 2 video — contrast/saturation lift to match Panel 1's punch.
+   Panel 1's cloud-mountain video reads as more saturated and contrasty;
+   without this filter, Panel 2's softer Adimaran twilight reads as muted
+   next to it. */
+.panel.p2 .panel-bg-video {
+  filter: contrast(1.12) saturate(1.18) brightness(1.03);
+}
+
+/* Panel 3 — Recognition — real cloud + 3 moons cosmic image */
+.panel.p3 .panel-bg {
+  background-image: url('/images/panel-3-bg.png');
+  background-color: var(--color-amber-gold); /* fallback if image missing */
+}
+
+/* Foreground image (Lyra cutout) */
+.panel-fg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+  /* All foreground PNGs are now true RGBA — no blend-mode hack needed */
+  mix-blend-mode: normal;
+}
+
+/* Panel 1 — true alpha-channel PNG, no blend mode needed */
+/* Sized smaller + right-aligned + pushed down + feathered left edge */
+.panel.p1 .panel-fg {
+  mix-blend-mode: normal;
+  width: auto;
+  height: 80vh;
+  /* override the inset:0 so we can place it specifically */
+  inset: auto;
+  bottom: -15vh; /* push the bottom cut off-screen */
+  right: 0;
+  object-fit: contain;
+  object-position: right bottom;
+  /* Feather the LEFT edge so it blends into the cloud bg (no hard cut) */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 25%);
+  mask-image: linear-gradient(to right, transparent 0%, black 25%);
+}
+
+/* Panel 1 — typography polish matching Panel 2:
+   smaller headline, uppercase tracked tagline, warm glow text-shadow,
+   stacked together in lower-left dark zone (path/rocks).
+   Plus a soft dark gradient veil behind the text for legibility on the
+   busy warm cloud bg, without using hard outlines. */
+.panel.p1 .panel-inner {
+  display: block;
+  padding: 0;
+}
+/* Soft radial vignette veil — fades organically, no hard rectangle */
+.panel.p1 .panel-inner::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 55%;
+  height: 38%;
+  background: radial-gradient(
+    ellipse at 25% 70%,
+    rgba(20, 10, 30, 0.55) 0%,
+    rgba(20, 10, 30, 0.32) 35%,
+    rgba(20, 10, 30, 0.12) 60%,
+    transparent 85%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+.panel.p1 .headline {
+  position: absolute;
+  left: 6vw;
+  bottom: 14vh;
+  font-size: clamp(28px, 3.6vw, 64px);
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--color-bone-white);
+  opacity: 0.92;                       /* slightly more solid for legibility */
+  /* Dual text-shadow: dark grounding for legibility + warm radiance */
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.55),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 0 28px rgba(255, 215, 180, 0.45),
+    0 0 8px rgba(255, 220, 200, 0.35);
+  text-align: left;
+  grid-column: unset; grid-row: unset; justify-self: unset;
+  margin: 0;
+}
+.panel.p1 .tagline {
+  position: absolute;
+  left: 6vw;
+  bottom: 8vh;
+  text-align: left;
+  max-width: 420px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-style: normal;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  font-size: clamp(11px, 0.85vw, 13px);
+  color: var(--color-bone-white);
+  opacity: 0.95;                       /* more solid for tracked uppercase legibility */
+  /* Dual shadow same approach */
+  text-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.6),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(255, 215, 180, 0.4);
+  grid-column: unset; grid-row: unset; justify-self: unset;
+  margin: 0;
+}
+
+/* Panel 2 — Stillness — true alpha-channel PNG (Lyra peeking from corner)
+   - LEFT-anchored, more aggressively cropped offscreen (left: -15vw)
+   - Scaled up to 90vh so she dominates AND most of the problematic hair edge
+     gets cropped offscreen entirely
+   - No mask — corner figure shouldn't fade, she's the focal presence */
+.panel.p2 .panel-fg {
+  mix-blend-mode: normal;
+  width: auto;
+  height: 95vh;            /* was 85vh — slightly bigger */
+  inset: auto;
+  bottom: 0;
+  left: -10vw;
+  object-fit: contain;
+  object-position: left bottom;
+  -webkit-mask-image: none;
+  mask-image: none;
+  /* Atmospheric integration — sticker → in-the-scene:
+     - drop-shadow gives her depth/weight against the bg (warm-violet ambient)
+     - hue-rotate -8deg shifts her warmth subtly toward the panel's rose-violet
+     - saturate 0.95 + brightness 0.97 = subtle atmospheric perspective falloff
+       (objects in atmosphere lose a touch of saturation/brightness)
+     The result is she reads as LIT BY the same sunset, not pasted ON TOP. */
+  filter:
+    drop-shadow(0 12px 28px rgba(60, 30, 60, 0.35))
+    hue-rotate(-8deg)
+    saturate(0.95)
+    brightness(0.97);
+}
+
+/* Panel 2 — text positioning override.
+   Default panel-inner uses a grid (headline left-bottom, tagline right-bottom).
+   For Panel 2 we want both stacked together in the left middle dark zone
+   between Lyra and the landscape, with a smaller headline. */
+.panel.p2 .panel-inner {
+  display: block;
+  padding: 0;
+}
+.panel.p2 .headline {
+  position: absolute;
+  left: 18vw;
+  bottom: 12vh;
+  font-size: clamp(28px, 3.6vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-bone-white);
+  opacity: 0.78;
+  /* #5 — soft warm glow (Lyra-coded radiance) instead of cold dark shadow */
+  text-shadow:
+    0 0 28px rgba(255, 215, 180, 0.55),
+    0 0 8px rgba(255, 220, 200, 0.4);
+  text-align: left;
+  grid-column: unset; grid-row: unset; justify-self: unset;
+  margin: 0;
+}
+.panel.p2 .tagline {
+  position: absolute;
+  left: 18vw;
+  bottom: 6vh;
+  text-align: left;
+  max-width: 360px;
+  /* #3 — uppercase tracked, architectural register pairing with the pyramids */
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-style: normal;                    /* removed italic */
+  font-weight: 500;
+  font-family: var(--font-ui);           /* Inter Tight UI font for tracked uppercase */
+  font-size: clamp(11px, 0.85vw, 13px);  /* smaller — uppercase reads heavier */
+  color: var(--color-bone-white);
+  opacity: 0.85;
+  /* #5 — same warm glow, lighter */
+  text-shadow:
+    0 0 18px rgba(255, 215, 180, 0.5),
+    0 0 6px rgba(255, 220, 200, 0.35);
+  grid-column: unset; grid-row: unset; justify-self: unset;
+  margin: 0;
+}
+
+/* Panel 2 — warm sunset overlay for palette continuity.
+   The Adimara city video has cool teal tones; we tint it with a warm
+   peach→twilight-rose gradient at low opacity to harmonize with Panel 1's
+   warm clouds and pull the panel toward Adimara's main palette. */
+.panel.p2 .panel-tint {
+  position: absolute; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(230, 168, 154, 0.18) 0%,    /* twilight-rose top */
+    rgba(240, 215, 160, 0.12) 45%,   /* dust-gold middle */
+    rgba(200, 146, 72, 0.22) 100%    /* amber-gold bottom */
+  );
+  mix-blend-mode: overlay;
+}
+
+/* Panel 2 — cloud-sky layer.
+   A second video on TOP of the pyramid bg, masked to an upper-right wedge
+   (~35-40% of panel area). Uses an SVG mask with feGaussianBlur applied to
+   the polygon, so the jagged edge is FEATHERED/BLURRED rather than crisp —
+   reads as torn cloud organic blend, not a clean cut.
+   mix-blend-mode: screen lets bright moons show through the clouds instead
+   of being hidden — the moon highlights blend with the cloud highlights.
+   Tint layer still applies on top for color cohesion. */
+.panel.p2 .panel-cloud-sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  /* SVG mask with polygon + STRONG Gaussian blur (stdDeviation 5 = very soft
+     feathered torn-cloud edge). Polygon is the same wedge shape but the heavy
+     blur turns the jagged points into a wide gradual fade so the seam reads
+     as atmospheric atmosphere, not a sharp boundary. */
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'><filter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'><feGaussianBlur stdDeviation='5'/></filter><polygon points='100,0 100,62 93,57 87,60 80,48 75,52 68,40 63,43 56,32 50,35 47,20 44,22 42,0' fill='white' filter='url(%23b)'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'><filter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'><feGaussianBlur stdDeviation='5'/></filter><polygon points='100,0 100,62 93,57 87,60 80,48 75,52 68,40 63,43 56,32 50,35 47,20 44,22 42,0' fill='white' filter='url(%23b)'/></svg>");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  /* Color filter: warm the clouds toward the pyramid sky's rose-amber palette,
+     plus boosted saturation so the cloud colors sing instead of muting. */
+  filter: hue-rotate(-20deg) saturate(1.2) brightness(1.08);
+  /* Screen blend so moons + sky bright pixels show through. */
+  mix-blend-mode: screen;
+  opacity: 0.72;          /* slightly raised so the cloud color reads more */
+}
+
+/* Inner content layer — headline LEFT, tagline RIGHT (per Serena's hero composition) */
+.panel-inner {
+  position: absolute; inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  grid-template-rows: 1fr auto;
+  align-items: end;
+  padding: 0 6vw 14vh;
+  color: var(--color-bone-white);
+  pointer-events: none;
+}
+.panel-inner > * { pointer-events: auto; }
+
+.headline {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+  text-align: left;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(56px, 9vw, 160px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--color-bone-white);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+  will-change: transform, opacity;
+  margin: 0;
+}
+
+.tagline {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  text-align: right;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(16px, 1.4vw, 22px);
+  line-height: 1.4;
+  max-width: 320px;
+  opacity: 0.95;
+  color: var(--color-bone-white);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+  will-change: transform, opacity;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------
+   Top nav — brand watermark + burger menu
+   ------------------------------------------------------------------ */
+.top-nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 15;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 28px 48px;
+  pointer-events: none;
+}
+.top-nav > * { pointer-events: auto; }
+
+/* Brand watermark — small, white, condensed */
+.brand {
+  font-family: var(--font-cond);
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-bone-white);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+  opacity: 0.85;
+}
+
+/* Burger menu (3 lines) */
+.burger-menu {
+  width: 32px; height: 22px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.burger-menu span {
+  display: block;
+  width: 100%; height: 2px;
+  background: var(--color-bone-white);
+  border-radius: 1px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.burger-menu[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(10px) rotate(45deg);
+}
+.burger-menu[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+.burger-menu[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-10px) rotate(-45deg);
+}
+
+/* Menu overlay — right-side drawer panel */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 90vw);
+  z-index: 14;
+  background: rgba(42, 32, 26, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  display: flex; align-items: center; justify-content: center;
+  animation: slide-in 0.35s ease forwards;
+  border-left: 1px solid rgba(251, 248, 241, 0.08);
+}
+.menu-overlay[hidden] { display: none; }
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.menu-close {
+  position: absolute; top: 28px; right: 48px;
+  width: 32px; height: 32px;
+  background: transparent; border: 0;
+  font-size: 32px; line-height: 1;
+  color: var(--color-bone-white);
+  cursor: pointer;
+}
+
+.menu-nav {
+  display: flex; flex-direction: column; gap: 28px;
+  align-items: center;
+}
+.menu-nav a {
+  font-family: var(--font-cond);
+  font-size: clamp(28px, 3.5vw, 52px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-bone-white);
+  text-decoration: none;
+  line-height: 1;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.menu-nav a:hover {
+  opacity: 0.7;
+  transform: translateX(6px);
+}
+
+/* ------------------------------------------------------------------
+   Side indicators
+   ------------------------------------------------------------------ */
+.side-indicator {
+  position: fixed; top: 50%;
+  transform: translateY(-50%);
+  z-index: 9;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  color: var(--color-bone-white);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+  opacity: 0.85;
+}
+.side-indicator.left { left: 28px; }
+.side-indicator.right { right: 28px; }
+
+/* ------------------------------------------------------------------
+   Progress dots
+   ------------------------------------------------------------------ */
+.progress-dots {
+  position: fixed; right: 40px; top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex; flex-direction: column; gap: 6px;
+}
+/* Each dot is a 28×28 button with a 10×10 visible disc inside via box-shadow.
+   Larger hit area = easier to click. Bright fill + dark stroke = readable on
+   ANY background (no fragile mix-blend-mode tricks). */
+.dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  opacity: 1;
+  transition: transform 0.3s ease;
+}
+.dot::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--color-bone-white);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.5);
+  opacity: 0.6;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.dot.active::before { opacity: 1; transform: translate(-50%, -50%) scale(1.35); }
+.dot:hover::before { opacity: 0.85; }
+
+/* ------------------------------------------------------------------
+   Footer
+   ------------------------------------------------------------------ */
+.footer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 28px 48px;
+  color: var(--color-bone-white);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.footer-links { display: flex; align-items: center; gap: 24px; }
+.footer-links a {
+  color: var(--color-bone-white);
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s;
+  display: inline-flex; align-items: center;
+}
+.footer-links a:hover { opacity: 0.6; }
+
+/* Instagram icon link */
+.ig-link {
+  width: 22px; height: 22px;
+  color: var(--color-bone-white);
+}
+.ig-link:hover { transform: scale(1.1); opacity: 0.85; }
+.ig-link svg { display: block; }
+
+/* ------------------------------------------------------------------
+   Scroll cue
+   ------------------------------------------------------------------ */
+.scroll-cue {
+  position: absolute; bottom: 96px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-espresso);
+  opacity: 0.5;
+  animation: bob 2.4s ease-in-out infinite;
+}
+@keyframes bob {
+  0%, 100% { transform: translate(-50%, 0); }
+  50%      { transform: translate(-50%, 8px); }
+}
+.panel.p3 .scroll-cue { display: none; }
+
+/* ------------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------------ */
+@media (max-width: 768px) {
+  .top-nav, .footer { padding: 20px 24px; }
+  .top-nav-links { gap: 18px; }
+  .brand { font-size: 16px; }
+  .side-indicator.left { left: 16px; }
+  .side-indicator.right { right: 16px; }
+  .progress-dots { right: 24px; gap: 14px; }
+  .dot { width: 8px; height: 8px; }
+}
