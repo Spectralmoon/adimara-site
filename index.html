@@ -39,9 +39,13 @@
   <div id="snap-container">
 
     <!-- Panel 1 — Longing / Departure -->
-    <!-- Layered: bg (cloud-mountain video) + figure (Lyra transparent cutout) -->
+    <!-- Layered: bg (cloud-mountain video) + figure (Lyra transparent cutout)
+         NOTE: poster image removed — panel-1-bg.png contains Lyra, which would
+         double up with the panel-fg cutout on first load. Body bg is espresso
+         (warm "black"), so the video element shows espresso until the mp4 loads.
+         Panel-fg opacity is 0 until JS toggles .bg-ready when video plays. -->
     <section class="panel p1" data-index="0" aria-label="Panel 1 — Home">
-      <video class="panel-bg-video" autoplay muted loop playsinline preload="auto" poster="/images/panel-1-bg.png">
+      <video class="panel-bg-video" autoplay muted loop playsinline preload="auto">
         <source src="/videos/panel-1-bg.mp4" type="video/mp4" />
       </video>
       <div class="panel-bg"></div>

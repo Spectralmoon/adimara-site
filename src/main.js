@@ -45,6 +45,26 @@ document.querySelectorAll('.panel-cloud-sky').forEach((v) => {
   v.playbackRate = 0.3;
 });
 
+/* Panel 1 — hold the foreground Lyra cutout invisible until the bg video
+   actually starts playing. The poster image (panel-1-bg.png) was removed
+   from the video tag because it ALSO contains Lyra, which would double up
+   with the panel-fg cutout during the brief mp4-load window. With no poster,
+   the body bg (espresso — our warm "black") shows through the transparent
+   video element until the mp4 starts; the cutout fades in only once the
+   video is actually rendering frames. */
+const p1Panel = document.querySelector('.panel.p1');
+if (p1Panel) {
+  const p1Video = p1Panel.querySelector('.panel-bg-video');
+  if (p1Video) {
+    const reveal = () => p1Panel.classList.add('bg-ready');
+    /* `playing` fires when the video has started rendering frames.
+       `loadeddata` is a safety net in case the browser has decoded a frame
+       but autoplay was deferred (e.g. low-power mode). */
+    p1Video.addEventListener('playing', reveal, { once: true });
+    p1Video.addEventListener('loadeddata', reveal, { once: true });
+  }
+}
+
 /* Panel 3 — sync the cloud-sky overlay's fade-in with the video midpoint
    ("when the camera passes the palm trees"). Without this, clouds are
    visible from the start and break the moment of revelation. */

@@ -235,7 +235,11 @@ html, body {
 }
 
 /* Panel 1 — true alpha-channel PNG, no blend mode needed */
-/* Sized smaller + right-aligned + pushed down + feathered left edge */
+/* Sized smaller + right-aligned + pushed down + feathered left edge.
+   Starts INVISIBLE (opacity 0) and fades in when the bg video starts playing
+   — see .panel.p1.bg-ready below + the canplay listener in main.js. This
+   prevents the "two Lyras" flash where both the poster image and the cutout
+   are visible during the brief mp4 load window. */
 .panel.p1 .panel-fg {
   mix-blend-mode: normal;
   width: auto;
@@ -249,6 +253,11 @@ html, body {
   /* Feather the LEFT edge so it blends into the cloud bg (no hard cut) */
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 25%);
   mask-image: linear-gradient(to right, transparent 0%, black 25%);
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+}
+.panel.p1.bg-ready .panel-fg {
+  opacity: 1;
 }
 
 /* Panel 1 — typography polish matching Panel 2:
@@ -626,9 +635,11 @@ html, body {
   z-index: 10;
   display: flex; flex-direction: column; gap: 6px;
 }
-/* Each dot is a 28×28 button with a 10×10 visible disc inside via box-shadow.
-   Larger hit area = easier to click. Bright fill + dark stroke = readable on
-   ANY background (no fragile mix-blend-mode tricks). */
+/* Constellation dots — tiny 4px bone-white discs, faint when inactive,
+   full opacity + thin honey ring when active. Larger 28×28 button kept
+   as the hit area so it's still easy to click despite the small visual.
+   No harsh black stroke or drop shadow — relies on opacity for legibility,
+   keeping the warm-only palette intact. */
 .dot {
   width: 28px; height: 28px;
   border-radius: 50%;
@@ -638,22 +649,54 @@ html, body {
   cursor: pointer;
   position: relative;
   opacity: 1;
-  transition: transform 0.3s ease;
+  /* Kill browser's default cyan focus ring on click (we restore an
+     accessible focus style for keyboard users via :focus-visible below). */
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
+
+/* Visible disc — small bone-white star, 40% opacity when inactive */
 .dot::before {
   content: "";
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 10px; height: 10px;
+  width: 4px; height: 4px;
   border-radius: 50%;
   background: var(--color-bone-white);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.5);
-  opacity: 0.6;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  opacity: 0.4;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
-.dot.active::before { opacity: 1; transform: translate(-50%, -50%) scale(1.35); }
-.dot:hover::before { opacity: 0.85; }
+
+/* Active disc — full opacity */
+.dot.active::before {
+  opacity: 1;
+}
+
+/* Active honey ring — thin 1px circle around the active dot.
+   Matches Adimara's warm palette (no cool focus ring). */
+.dot.active::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--color-honey);
+  opacity: 0.8;
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.dot:hover::before { opacity: 0.7; }
+
+/* Keyboard accessibility — show focus ring ONLY for keyboard nav (Tab),
+   never for mouse clicks. Uses bone-white to stay on-palette. */
+.dot:focus-visible {
+  outline: 2px solid var(--color-bone-white);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
 
 /* ------------------------------------------------------------------
    Footer
